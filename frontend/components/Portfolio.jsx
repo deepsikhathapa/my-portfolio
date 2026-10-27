@@ -6,6 +6,40 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 const IDS = ["home", "about", "skills", "experience", "projects", "contact"];
 const EMPTY = { name: "", email: "", subject: "", message: "", website: "" };
 
+const QA_ICONS = [
+  <>
+    <path d="M9 4.5H7.8A2.8 2.8 0 0 0 5 7.3v11.4a2.8 2.8 0 0 0 2.8 2.8h8.4a2.8 2.8 0 0 0 2.8-2.8V7.3a2.8 2.8 0 0 0-2.8-2.8H15" />
+    <path d="M9 3h6v3H9z" />
+    <path d="m9 13 2 2 4-4" />
+  </>,
+  <path d="m8 8-4 4 4 4M16 8l4 4-4 4M13.5 5.5l-3 13" />,
+  <>
+    <rect x="8" y="9" width="8" height="10" rx="4" />
+    <path d="M8 13H4M20 13h-4M8.5 9 6 6.5M15.5 9 18 6.5M8 17l-2.5 2.5M16 17l2.5 2.5M12 5V3" />
+  </>,
+  <>
+    <rect x="2.5" y="5" width="13" height="9" rx="1.5" />
+    <path d="M6.5 18h5M9 14v4" />
+    <rect x="16.5" y="10" width="5" height="10" rx="1.2" />
+  </>,
+  <>
+    <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+    <path d="m3 12 9 5 9-5M3 16l9 5 9-5" />
+  </>,
+  <>
+    <circle cx="9" cy="8" r="3" />
+    <path d="M3.5 19a5.5 5.5 0 0 1 11 0M16 5.5a3 3 0 0 1 0 5.8M17.5 19a5.5 5.5 0 0 0-2-4.3" />
+  </>,
+];
+
+function QaIcon({ i }) {
+  return (
+    <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      {QA_ICONS[i % QA_ICONS.length]}
+    </svg>
+  );
+}
+
 function Title({ text, ey }) {
   const [a, b] = text.split("|");
   return (
@@ -40,17 +74,31 @@ export default function Portfolio({ data }) {
     try { localStorage.setItem("theme", theme); localStorage.setItem("lang", lang); } catch {}
   }, [theme, lang]);
   useEffect(() => {
-    const onScroll = () => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       const h = document.documentElement;
-      setProgress((h.scrollTop / (h.scrollHeight - h.clientHeight || 1)) * 100);
+      const y = window.scrollY || h.scrollTop;
+      const max = h.scrollHeight - h.clientHeight;
+      setProgress(max > 0 ? (y / max) * 100 : 0);
+      const line = window.innerHeight * 0.4;
+      let current = IDS[0];
+      IDS.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= line) current = id;
+      });
+      if (max > 0 && y >= max - 2) current = IDS[IDS.length - 1];
+      setActive(current);
     };
+    const onScroll = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
     window.addEventListener("scroll", onScroll, { passive: true });
-    const io = new IntersectionObserver(
-      (es) => es.forEach((e) => e.isIntersecting && setActive(e.target.id)),
-      { rootMargin: "-40% 0px -55% 0px" }
-    );
-    IDS.forEach((id) => { const el = document.getElementById(id); el && io.observe(el); });
-    return () => { window.removeEventListener("scroll", onScroll); io.disconnect(); };
+    window.addEventListener("resize", onScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   async function send(e) {
@@ -126,12 +174,16 @@ export default function Portfolio({ data }) {
 
         <section id="skills" className="wrap sec">
           <Title ey={t.skillsEy} text={t.skills} />
-          <div className="grid3">
-            {skillGroups.map((g) => (
-              <div key={g.title} className={`card tint c-${g.color}`}>
-                <h3>{g.title}</h3><p>{g.description}</p>
-                <ul className="tags">{g.skills.map((s) => <li key={s}>{s}</li>)}</ul>
-              </div>
+          <div className="qa-grid">
+            {skillGroups.map((g, i) => (
+              <article key={g.title} className="qa-card">
+                <span className="qa-ic"><QaIcon i={i} /></span>
+                <div>
+                  <h3>{g.title}</h3>
+                  <p>{g.description}</p>
+                  <ul className="qa-tags">{g.skills.map((s) => <li key={s}>{s}</li>)}</ul>
+                </div>
+              </article>
             ))}
           </div>
         </section>

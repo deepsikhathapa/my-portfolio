@@ -5,6 +5,7 @@ Django==5.1.15
 django-cors-headers==4.9.0
 django-storages==1.14.6
 djangorestframework==3.17.2
+dj-database-url==2.2.0
 gunicorn==26.2.0
 jmespath==1.1.0
 pillow==13.0.0

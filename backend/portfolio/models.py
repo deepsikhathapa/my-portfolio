@@ -1,5 +1,16 @@
 from django.db import models
 
+import os
+from django.core.files.storage import default_storage
+
+
+def resume_storage():
+    # PDFs need Cloudinary's "raw" storage; fall back to local disk without CLOUDINARY_URL
+    if os.environ.get("CLOUDINARY_URL"):
+        from cloudinary_storage.storage import RawMediaCloudinaryStorage
+        return RawMediaCloudinaryStorage()
+    return default_storage
+
 COLORS = [("teal", "Teal"), ("blue", "Blue"), ("red", "Red"), ("purple", "Purple"), ("amber", "Amber"), ("sky", "Sky")]
 
 
@@ -26,7 +37,7 @@ class Profile(models.Model):
     linkedin = models.URLField(blank=True)
     github = models.URLField(blank=True)
     photo = models.ImageField(upload_to="profile", blank=True)
-    resume = models.FileField(upload_to="resume", blank=True)
+    resume = models.FileField(upload_to="resume", blank=True, storage=resume_storage)
     available = models.BooleanField(default=True, help_text="Shows the 'available for QA roles' badge")
 
     def __str__(self):

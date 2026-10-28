@@ -17,7 +17,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", os.en
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
-    "django.contrib.sessions", "django.contrib.messages", "cloudinary_storage", "django.contrib.staticfiles", "cloudinary",
+    "django.contrib.sessions", "django.contrib.messages",  "django.contrib.staticfiles", "cloudinary_storage", "cloudinary",
     "rest_framework", "rest_framework.authtoken", "corsheaders", "portfolio",
 ]
 MIDDLEWARE = [

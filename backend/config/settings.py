@@ -17,7 +17,7 @@ ALLOWED_HOSTS = [h.strip() for h in os.environ.get("DJANGO_ALLOWED_HOSTS", os.en
 
 INSTALLED_APPS = [
     "django.contrib.admin", "django.contrib.auth", "django.contrib.contenttypes",
-    "django.contrib.sessions", "django.contrib.messages", "django.contrib.staticfiles",
+    "django.contrib.sessions", "django.contrib.messages", "cloudinary_storage", "django.contrib.staticfiles", "cloudinary",
     "rest_framework", "rest_framework.authtoken", "corsheaders", "portfolio",
 ]
 MIDDLEWARE = [
@@ -115,19 +115,10 @@ if not DEBUG:
     X_FRAME_OPTIONS = "DENY"
     SECURE_SSL_REDIRECT = os.environ.get("SECURE_SSL_REDIRECT", "true").lower() == "true"
 
-# Uploaded photo and resume go to Cloudflare R2 (S3-compatible) when R2_BUCKET is set.
-if os.environ.get("R2_BUCKET"):
+# Uploaded photo and resume go to Cloudinary when CLOUDINARY_URL is set.
+if os.environ.get("CLOUDINARY_URL"):
     STORAGES = {
-        "default": {"BACKEND": "storages.backends.s3.S3Storage", "OPTIONS": {
-            "bucket_name": os.environ["R2_BUCKET"],
-            "endpoint_url": os.environ["R2_ENDPOINT"],
-            "access_key": os.environ["R2_ACCESS_KEY"],
-            "secret_key": os.environ["R2_SECRET_KEY"],
-            "custom_domain": os.environ["R2_PUBLIC_DOMAIN"],
-            "region_name": "auto",
-            "querystring_auth": False,
-            "file_overwrite": False,
-        }},
+        "default": {"BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage"},
         "staticfiles": {"BACKEND": "whitenoise.storage.CompressedStaticFilesStorage"},
     }
 else:
